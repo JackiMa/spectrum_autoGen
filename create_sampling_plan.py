@@ -249,10 +249,6 @@ def main_plan_generator(args=None, args_list=None):
         else:
             args = parser.parse_args()
 
-    # --- 用户测试代码 (可选, 用于独立测试此脚本) ---
-    # args.config = "config_test.json"
-    # --- 结束用户测试代码 ---
-
     logger.setLevel(getattr(logging, args.log_level.upper()))
     if args.log_level == "DEBUG": logger.info("已启用 DEBUG 日志级别。")
 
@@ -294,10 +290,10 @@ if __name__ == "__main__":
     # 以下是几种调用方式的示例
     
     # 1. 原始方式：直接解析命令行参数
-    # main_plan_generator()
+    main_plan_generator()
     
     # 2. 传入字符串列表方式（取消注释使用）
-    main_plan_generator(args_list=["--config", "config_test.json", "--log_level", "DEBUG"])
+    # main_plan_generator(args_list=["--config", "config_test.json", "--log_level", "DEBUG"])
     
     # 3. 传入已解析的参数对象方式（取消注释使用）
     # import argparse

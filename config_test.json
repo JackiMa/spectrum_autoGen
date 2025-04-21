@@ -9,9 +9,9 @@
   
     "method1": {
       "_description": "Specify particle count range for each energy level. Generates spectrum by sampling counts per level independently.",
-      "energy_levels_MeV": [0.6, 0.8, 1.0, 1.2],
-      "min_particles_per_level": [100, 200, 300, 400],
-      "max_particles_per_level": [200, 300, 400, 500]
+      "energy_levels_MeV": [0.6],
+      "min_particles_per_level": [100000],
+      "max_particles_per_level": [200000]
     },
   
     "method2": {

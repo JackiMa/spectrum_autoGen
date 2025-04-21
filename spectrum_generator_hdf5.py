@@ -625,4 +625,5 @@ if __name__ == "__main__":
     try:
         import h5py; import numpy; import scipy
     except ImportError as e: print(f"错误: 缺少必要的库: {e}. 请确保 h5py, numpy, scipy 已安装。", file=sys.stderr); sys.exit(1)
-    main_orchestrator(args_list=["--config", "config_test.json", "--workers", "16", "--resume", "--log_level", "INFO"])
+    main_orchestrator()
+    # main_orchestrator(args_list=["--config", "config_test.json", "--workers", "16", "--resume", "--log_level", "INFO"])
