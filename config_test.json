@@ -1,17 +1,17 @@
 {
     "simulation_run_name": "test_run",
-    "num_datasets_to_generate": 1000,
+    "num_datasets_to_generate": 20,
     "generation_method": "method1",
-    "input_data_directory": "./sim_data_hd5_V2",
+    "input_data_directory": "./sim_data_hd5_V3",
     "num_detector_layers": 20,
     "random_seed": null,
     "output_directory": "./output",
   
     "method1": {
       "_description": "Specify particle count range for each energy level. Generates spectrum by sampling counts per level independently.",
-      "energy_levels_MeV": [0.6],
-      "min_particles_per_level": [100000],
-      "max_particles_per_level": [200000]
+      "energy_levels_MeV": [0.5],
+      "min_particles_per_level": [1000000],
+      "max_particles_per_level": [2000000]
     },
   
     "method2": {

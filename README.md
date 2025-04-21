@@ -268,10 +268,20 @@ python spectrum_generator_hdf5.py --config config_test.json --workers 16 --resum
 - **缓冲区优化**：精心调整的HDF5缓冲区大小，减少I/O调用次数
 - **梯度内存使用**：根据任务类型动态调整内存分配策略
 
+### 6. 块信息缓存系统 - 加速重复执行
+
+- **块信息持久化**：自动缓存每个能量级别的块结构信息，存储在`output_directory/chunks_cache/`目录
+- **缓存验证机制**：通过检查文件修改时间确保缓存有效性，当数据文件变更时自动重建
+- **并行块信息收集**：首次扫描时采用并行处理，显著加速大规模数据集的准备工作
+- **缓存清理选项**：提供`--clean_cache`参数手动清除所有缓存
+
+对于包含数百个HDF5文件的大型数据集，块信息缓存可将扫描时间从小时级（如>1小时）缩短到秒级（<5秒），显著提高处理效率，特别适合多次运行相同数据集的场景。
+
 ### 性能估算
 
 在典型的多核系统(16核)上处理1000个事件，每个事件从16个能级抽样，每个能级平均1亿行数据：
 
+- **预处理阶段**：CSV转HDF5，约16GB/小时
 - **规划阶段**：生成抽样计划，<1分钟
 - **执行阶段**：执行抽样计划，约 1e13 events/小时
 
@@ -291,4 +301,7 @@ python spectrum_generator_hdf5.py --config config_test.json --workers 16
 
 # 断点续算
 python spectrum_generator_hdf5.py --config config_test.json --workers 16 --resume
+
+# 清除块信息缓存（当数据结构变更时）
+python spectrum_generator_hdf5.py --config config_test.json --clean_cache
 ``` 

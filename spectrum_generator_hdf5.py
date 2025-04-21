@@ -15,19 +15,19 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Dict, List, Any, Tuple, Optional, Union
 from numpy.random import Generator, PCG64, SeedSequence
 from create_sampling_plan import *
+import concurrent.futures  # 添加导入
 # --- 常量 ---
 CHECKPOINT_FILENAME: str = "sampling_checkpoint.pkl"
 HDF5_DATASET_NAME: str = 'detector_response'
 DEFAULT_CHUNK_SHAPE: Tuple[int, int] = (10000, 20)
-
+MIN_SAMPLING_RATIO = 0.3  # 块最低抽样效率阈值 (1/10)，值越大，效率越高，但随机性下降
 # --- 配置日志 ---
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - [%(process)d] - %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger(__name__)
 
-# --- Helper Functions (save_checkpoint, load_checkpoint, save_output_file - 保持不变) ---
-# ... (复制 save_checkpoint, load_checkpoint, save_output_file 函数) ...
+
 def save_checkpoint(filepath: str, state: Dict[str, Any]):
     temp_filepath = filepath + ".tmp"
     try:
@@ -58,20 +58,41 @@ def load_checkpoint(filepath: str) -> Optional[Dict[str, Any]]:
 def save_output_file(output_dir: str, run_name: str, event_id: int,
                      plan: Dict[str, Any], final_sum: np.ndarray,
                      actual_counts_per_bin: Dict[str, int], num_layers: int,
-                     num_total_events: int):
+                     num_total_events: int, all_energy_bins: List[str] = None):
     padding_width = len(str(num_total_events)); filename = f"{run_name}_event_{event_id:0{padding_width}d}.txt"; filepath = os.path.join(output_dir, filename)
     try:
-        if not actual_counts_per_bin: logger.warning(f"Skipping output for event {event_id} as actual_counts_per_bin is empty."); return
-        sampled_energies = sorted(actual_counts_per_bin.keys(), key=lambda x: float(x.replace('MeV','')))
-        if not sampled_energies: logger.warning(f"Skipping output for event {event_id} as no valid energies found."); return
-        numeric_energies_str = [energy.replace('MeV', '') for energy in sampled_energies]
+        # 不再跳过空的actual_counts_per_bin，而是输出所有能量点
+        if all_energy_bins is None or len(all_energy_bins) == 0:
+            # 如果没有提供所有能量点，则使用实际的能量点
+            if not actual_counts_per_bin:
+                logger.warning(f"事件 {event_id} 没有能量点数据且未提供所有能量点列表，跳过。")
+                return
+            energy_bins = sorted(actual_counts_per_bin.keys(), key=lambda x: float(x.replace('MeV','')))
+        else:
+            # 使用提供的所有能量点列表
+            energy_bins = sorted(all_energy_bins, key=lambda x: float(x.replace('MeV','')))
+            
+        if not energy_bins:
+            logger.warning(f"事件 {event_id} 没有有效的能量点，跳过。")
+            return
+            
+        # 生成不带MeV的能量数值字符串列表
+        numeric_energies_str = [energy.replace('MeV', '') for energy in energy_bins]
+        
+        # 第一行：所有能量点
         line1 = ", ".join(numeric_energies_str)
-        line2 = ", ".join(str(actual_counts_per_bin.get(energy, 0)) for energy in sampled_energies)
+        
+        # 第二行：每个能量点对应的粒子数，如果没有则为0
+        line2 = ", ".join(str(actual_counts_per_bin.get(energy, 0)) for energy in energy_bins)
+        
+        # 其他行保持不变
         line3 = ", ".join(map(str, range(1, num_layers + 1)))
         line4 = np.array2string(final_sum, separator=', ', formatter={'float_kind':lambda x: f"{x:.8e}"},threshold=np.inf,max_line_width=np.inf).replace('[','').replace(']','')
-        content = f"{line1}\n{line2}\n{line3}\n{line4}" # No trailing newline
-        logger.debug(f"DEBUG SAVE Internal: Event {event_id}, Writing line2: {line2}") # Keep debug
+        
+        content = f"{line1}\n{line2}\n\n\n{line3}\n{line4}" # No trailing newline
+        logger.debug(f"DEBUG SAVE: 事件 {event_id}, 写入第二行: {line2}") # Keep debug
         with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
+        logger.info(f"已保存事件 {event_id} 的输出文件: {filename}")
     except Exception as e: logger.exception(f"写入输出文件 {filepath} 时发生未知错误")
 
 
@@ -83,13 +104,11 @@ def sample_chunk_task(task_info: Dict[str, Any]) -> Tuple[Dict[int, np.ndarray],
     chunk_end = task_info['chunk_end_row']
     sampling_needs_map = task_info['sampling_needs'] # {event_idx: n_to_sample_deterministic}
     dataset_name = task_info['dataset_name']
-    num_layers = task_info['num_layers']
     rng_seed = task_info['rng_seed']
 
     rng = Generator(PCG64(rng_seed))
     partial_sums: Dict[int, np.ndarray] = {}
     actual_counts: Dict[int, int] = {}
-    is_target_chunk = '0.6MeV' in part_file_path
 
     try:
         with h5py.File(part_file_path, 'r') as f:
@@ -128,7 +147,6 @@ def sample_chunk_task(task_info: Dict[str, Any]) -> Tuple[Dict[int, np.ndarray],
                      print(f"ERROR WORKER {os.getpid()}: IndexError E:{event_idx} C:[{chunk_start}-{actual_chunk_end}] {ie}", flush=True)
                      continue
 
-    # ... (异常处理保持不变) ...
     except FileNotFoundError: print(f"ERROR WORKER {os.getpid()}: HDF5 File Not Found - {part_file_path}", file=sys.stderr, flush=True); return {}, {}
     except KeyError: print(f"ERROR WORKER {os.getpid()}: Dataset '{dataset_name}' not found in {part_file_path}", file=sys.stderr, flush=True); return {}, {}
     except ValueError as e: print(f"ERROR WORKER {os.getpid()}: ValueError processing chunk {chunk_start}-{chunk_end} in {part_file_path}: {e}", file=sys.stderr, flush=True); return {}, {}
@@ -233,54 +251,263 @@ class SamplingExecutor:
                 return self.master_rng_for_tasks.integers(low=0, high=2**32)
         except StopIteration: logger.error("严重错误: 预生成的随机种子已用尽！"); sys.exit("Seed exhaustion error.")
 
-    def _distribute_deterministically(self, chunks_info: List[Tuple[str, int, int, int]], p_eff: float, total_target_for_pass: int) -> Dict[Tuple[str, int], int]:
-        """使用最大余数法确定性地分配样本到块"""
+    def _distribute_deterministically(self, chunks_in_pass: List[Tuple[str, int, int, int]], p_eff: float, total_target_for_pass: int) -> Dict[Tuple[str, int], int]:
+        """使用最大余数法确定性地分配样本到块，同时应用抽样优化
+        
+        优化策略：
+        1. 根据MIN_SAMPLING_RATIO反向计算需要的块数量
+        2. 只从随机选择的N个块中抽样，而不是从所有块抽样
+        3. 每个选择的块自然达到所需的最低抽样率
+        """
         allocations: Dict[Tuple[str, int], int] = {} # {(path, start): count}
-        fractional_parts: List[Tuple[float, str, int]] = [] # [(f_part, path, start)]
-        total_base_allocation = 0
-        total_exact_sum = 0.0 # For checking
+        
+        # 如果没有块或目标为0，直接返回空分配
+        if not chunks_in_pass or total_target_for_pass <= 0:
+            return allocations
+            
+        # 计算原始总行数
+        total_rows = sum(rows for _, _, _, rows in chunks_in_pass)
+        if total_rows <= 0:
+            return allocations
+            
+        # 计算总体抽样率
+        overall_sampling_rate = total_target_for_pass / total_rows
+        
+        # 根据MIN_SAMPLING_RATIO反向计算需要的块数量
+        avg_chunk_size = total_rows / len(chunks_in_pass)
+        
+        # 仅当总体抽样率小于阈值时才进行优化
+        if overall_sampling_rate < MIN_SAMPLING_RATIO:
+            # 计算需要抽样的理想块数
+            # 公式: 总目标样本数 / (每块大小 * MIN_SAMPLING_RATIO)
+            ideal_chunks_needed = math.ceil(total_target_for_pass / (avg_chunk_size * MIN_SAMPLING_RATIO))
+            
+            # 限制块数在合理范围内
+            target_chunks = min(len(chunks_in_pass), max(5, ideal_chunks_needed))
+            
+            logger.debug(f"优化: 总抽样率低于阈值 ({overall_sampling_rate:.3%} < {MIN_SAMPLING_RATIO:.0%})")
+            logger.debug(f"优化: 总块数:{len(chunks_in_pass)}, 需要:{ideal_chunks_needed}, 选择:{target_chunks}")
+            
+            # 随机选择固定数量的块
+            chunks_copy = chunks_in_pass.copy()
+            random.shuffle(chunks_copy)
+            selected_chunks = chunks_copy[:target_chunks]
+            
+            # 更新p_eff以反映我们只使用部分块
+            selected_total_rows = sum(rows for _, _, _, rows in selected_chunks)
+            if selected_total_rows > 0:
+                adjusted_p_eff = total_target_for_pass / selected_total_rows
+            else:
+                return allocations  # 如果选择的块没有行，返回空分配
+                
+            # 使用正常的分配算法，但只用于选择的块
+            fractional_parts: List[Tuple[float, str, int]] = []
+            total_base_allocation = 0
+            
+            # 1. 计算基础分配和分数部分
+            for path, start, end, rows_in_chunk in selected_chunks:
+                task_key = (path, start)
+                if rows_in_chunk <= 0:
+                    allocations[task_key] = 0
+                    continue
+                exact_n = rows_in_chunk * adjusted_p_eff
+                n_base = math.floor(exact_n)
+                f_part = exact_n - n_base
+                allocations[task_key] = n_base
+                total_base_allocation += n_base
+                if f_part > 1e-9:
+                    fractional_parts.append((f_part, path, start))
+            
+            # 2. 计算需要额外分配的余数
+            target_pass_rounded = round(total_target_for_pass)
+            n_remainder = target_pass_rounded - total_base_allocation
+            n_remainder = max(0, min(n_remainder, len(selected_chunks)))
+            
+            # 3. 按小数部分大小分配余数
+            fractional_parts.sort(key=lambda item: item[0], reverse=True)
+            num_to_distribute = min(n_remainder, len(fractional_parts))
+            
+            for i in range(num_to_distribute):
+                _, path, start = fractional_parts[i]
+                allocations[(path, start)] += 1
+                
+            return allocations
+            
+        else:
+            # 常规分配 - 不需要优化，使用所有块
+            fractional_parts: List[Tuple[float, str, int]] = []
+            total_base_allocation = 0
+            
+            # 1. 计算基础分配和分数部分
+            for path, start, end, rows_in_chunk in chunks_in_pass:
+                task_key = (path, start)
+                if rows_in_chunk <= 0:
+                    allocations[task_key] = 0
+                    continue
+                exact_n = rows_in_chunk * p_eff
+                n_base = math.floor(exact_n)
+                f_part = exact_n - n_base
+                allocations[task_key] = n_base
+                total_base_allocation += n_base
+                if f_part > 1e-9:
+                    fractional_parts.append((f_part, path, start))
+    
+            # 2. 计算需要额外分配的余数
+            target_pass_rounded = round(total_target_for_pass)
+            n_remainder = target_pass_rounded - total_base_allocation
+            n_remainder = max(0, min(n_remainder, len(chunks_in_pass)))
+    
+            # 3. 按小数部分大小分配余数
+            fractional_parts.sort(key=lambda item: item[0], reverse=True)
+            num_to_distribute = min(n_remainder, len(fractional_parts))
+    
+            for i in range(num_to_distribute):
+                _, path, start = fractional_parts[i]
+                allocations[(path, start)] += 1
+    
+            return allocations
 
-        # 1. 计算基础分配和分数部分
-        for path, start, end, rows_in_chunk in chunks_info:
-            task_key = (path, start)
-            if rows_in_chunk <= 0:
-                allocations[task_key] = 0
+    def _get_files_stats(self, energy_bin):
+        """获取能量级别所有文件的状态，用于验证缓存有效性"""
+        if energy_bin not in self.hdf5_index:
+            return {}
+        
+        stats = {}
+        part_files_info = self.hdf5_index[energy_bin].get('parts', [])
+        for part_info in part_files_info:
+            path_relative = part_info['path']
+            path_abs = os.path.join(self.input_data_dir, path_relative)
+            try:
+                stats[path_relative] = os.path.getmtime(path_abs)
+            except OSError:
+                # 如果文件不存在，记录当前时间戳以强制重新生成
+                stats[path_relative] = time.time()
+        return stats
+    
+    def _verify_cache_valid(self, cache_data, energy_bin):
+        """验证块信息缓存是否仍然有效"""
+        if not cache_data or 'file_stats' not in cache_data:
+            return False
+            
+        # 检查文件是否发生变化（通过修改时间）
+        current_stats = self._get_files_stats(energy_bin)
+        cached_stats = cache_data['file_stats']
+        
+        # 检查文件数量是否一致
+        if len(current_stats) != len(cached_stats):
+            logger.info(f"缓存无效：文件数量已改变 ({len(cached_stats)} -> {len(current_stats)})")
+            return False
+            
+        # 检查文件修改时间是否一致
+        for file_path, mtime in current_stats.items():
+            if file_path not in cached_stats:
+                logger.info(f"缓存无效：新文件已添加 ({file_path})")
+                return False
+            if mtime > cached_stats[file_path]:
+                logger.info(f"缓存无效：文件已修改 ({file_path})")
+                return False
+                
+        return True
+    
+    @staticmethod
+    def _collect_chunks_for_file(part_info, chunk_rows, input_data_dir):
+        """并行收集单个文件的块信息"""
+        file_chunks = []
+        part_file_path_relative = part_info['path']
+        part_file_path_abs = os.path.join(input_data_dir, part_file_path_relative)
+        rows_in_this_part = part_info.get('rows', 0)
+        
+        if rows_in_this_part <= 0:
+            return file_chunks
+            
+        for chunk_start in range(0, rows_in_this_part, chunk_rows):
+            chunk_end = min(chunk_start + chunk_rows, rows_in_this_part)
+            actual_rows = chunk_end - chunk_start
+            if actual_rows <= 0:
                 continue
-            exact_n = rows_in_chunk * p_eff
-            total_exact_sum += exact_n
-            n_base = math.floor(exact_n)
-            f_part = exact_n - n_base
-            allocations[task_key] = n_base
-            total_base_allocation += n_base
-            if f_part > 1e-9:
-                fractional_parts.append((f_part, path, start))
-
-        # 2. 计算需要额外分配的余数
-        target_pass_rounded = round(total_target_for_pass)
-        n_remainder = target_pass_rounded - total_base_allocation
-        if n_remainder < 0:
-             # logger.warning(...) # Keep warning if needed
-             n_remainder = 0
-        n_remainder = min(n_remainder, len(chunks_info)) # Cap remainder
-
-        # 3. 按小数部分大小分配余数
-        fractional_parts.sort(key=lambda item: item[0], reverse=True)
-        num_to_distribute = min(n_remainder, len(fractional_parts))
-        for i in range(num_to_distribute):
-            _, path, start = fractional_parts[i]
-            allocations[(path, start)] += 1
-
-        # Debug check:
-        final_sum_check = sum(allocations.values())
-        if not math.isclose(final_sum_check, target_pass_rounded):
-             logger.debug(f"DEBUG DISTRIBUTE: Pass Target={target_pass_rounded}, Base={total_base_allocation}, Remainder={n_remainder}, Distributed Sum={final_sum_check}, Exact Sum={total_exact_sum:.4f}")
-
-        return allocations
-
+            file_chunks.append((part_file_path_abs, chunk_start, chunk_end, actual_rows))
+            
+        return file_chunks
+        
+    def collect_chunks_info(self, energy_bin, chunk_rows):
+        """收集能量级别的块信息，支持缓存和并行处理"""
+        # 缓存文件路径
+        cache_dir = os.path.join(self.output_dir, "chunks_cache")
+        os.makedirs(cache_dir, exist_ok=True)
+        sanitized_name = energy_bin.replace('.', '_').replace('/', '_')
+        cache_file = os.path.join(cache_dir, f"chunks_cache_{sanitized_name}.pkl")
+        
+        # 检查缓存是否存在且有效
+        if os.path.exists(cache_file) and not self.force_rerun:
+            try:
+                with open(cache_file, 'rb') as f:
+                    cache_data = pickle.load(f)
+                    # 验证缓存有效性
+                    if self._verify_cache_valid(cache_data, energy_bin):
+                        logger.info(f"使用缓存的块信息: {energy_bin} ({len(cache_data['chunks_in_pass'])} 个块)")
+                        return cache_data['chunks_in_pass']
+                    else:
+                        logger.info(f"块信息缓存已过期: {energy_bin}")
+            except Exception as e:
+                logger.warning(f"读取块信息缓存失败: {e}")
+        
+        # 如果缓存无效或不存在，收集块信息
+        logger.info(f"为 {energy_bin} 收集块信息（并行处理）...")
+        bin_metadata = self.hdf5_index[energy_bin]
+        part_files_info = bin_metadata.get('parts', [])
+        
+        # 使用并行处理收集块信息
+        chunks_in_pass = []
+        collection_start = time.time()
+        
+        # 对于小规模的文件集，直接串行处理
+        if len(part_files_info) < 10:
+            for part_info in part_files_info:
+                chunks = self._collect_chunks_for_file(part_info, chunk_rows, self.input_data_dir)
+                chunks_in_pass.extend(chunks)
+        else:
+            # 对于大规模的文件集，使用并行处理
+            with ProcessPoolExecutor(max_workers=min(self.num_workers, len(part_files_info))) as executor:
+                futures = []
+                for part_info in part_files_info:
+                    futures.append(executor.submit(
+                        self._collect_chunks_for_file,
+                        part_info,
+                        chunk_rows,
+                        self.input_data_dir
+                    ))
+                
+                # 收集结果
+                for i, future in enumerate(as_completed(futures)):
+                    try:
+                        file_chunks = future.result()
+                        chunks_in_pass.extend(file_chunks)
+                        # 每处理10%的文件或文件数量少于10时，输出进度
+                        if (i+1) % max(1, len(futures)//10) == 0 or i+1 == len(futures):
+                            logger.info(f"  块信息收集进度: {i+1}/{len(futures)} 个文件处理完成")
+                    except Exception as e:
+                        logger.error(f"收集块信息时出错: {e}")
+        
+        collection_time = time.time() - collection_start
+        logger.info(f"块信息收集完成: {energy_bin}，共 {len(chunks_in_pass)} 个块，耗时 {collection_time:.2f}s")
+        
+        # 保存到缓存
+        try:
+            with open(cache_file, 'wb') as f:
+                pickle.dump({
+                    'chunks_in_pass': chunks_in_pass,
+                    'timestamp': time.time(),
+                    'file_stats': self._get_files_stats(energy_bin)
+                }, f)
+            logger.info(f"块信息已缓存: {cache_file}")
+        except Exception as e:
+            logger.warning(f"保存块信息缓存失败: {e}")
+        
+        return chunks_in_pass
 
     def execute(self) -> Optional[Tuple[List[np.ndarray], List[Dict[str, int]]]]:
-        """执行主要的抽样循环 (使用确定性分配 - 修正版)"""
-        logger.info("--- 开始阶段 2: 执行抽样任务 (使用确定性分配) ---")
+        """执行主要的抽样循环 (使用并行确定性分配和抽样效率优化)"""
+        logger.info("--- 开始阶段 2: 执行抽样任务 (使用并行确定性分配) ---")
         self._initialize_state()
         self._prepare_seeds()
 
@@ -324,97 +551,235 @@ class SamplingExecutor:
                     start_pass_num = math.floor(min_collected_for_active / total_rows_in_bin) + 1 if total_rows_in_bin > 0 else 1
                     logger.info(f"Resuming: 最少收集数 {min_collected_for_active}, 从 Pass {start_pass_num} 开始处理 {energy_bin}")
 
+                # 使用优化后的块信息收集方法
+                chunks_in_pass = self.collect_chunks_info(energy_bin, chunk_rows)
+                if not chunks_in_pass:
+                    logger.warning(f"能量分档 {energy_bin} 未找到有效数据块，跳过。")
+                    self._save_current_checkpoint(bin_idx)
+                    continue
+
                 for pass_num in range(start_pass_num, max_passes_needed + 1):
                     if not current_active_tasks_in_bin: logger.info(f"  Pass {pass_num}: 无剩余，跳过。"); continue
                     pass_start_time = time.time(); logger.info(f"  开始 Pass {pass_num}/{max_passes_needed} for {energy_bin}...")
                     tasks_for_pool: List[Dict[str, Any]] = []
 
-                    # 1. 收集当前 Pass 的所有块信息
-                    chunks_in_pass: List[Tuple[str, int, int, int]] = []
-                    part_file_counter = 0
-                    for part_info in part_files_info:
-                        part_file_counter += 1; part_file_path_relative = part_info['path']
-                        part_file_path_abs = os.path.join(self.input_data_dir, part_file_path_relative)
-                        rows_in_this_part = part_info.get('rows', 0)
-                        if rows_in_this_part <= 0: continue
-                        for chunk_start_in_part in range(0, rows_in_this_part, chunk_rows):
-                            chunk_end_in_part = min(chunk_start_in_part + chunk_rows, rows_in_this_part)
-                            actual_rows_in_chunk = chunk_end_in_part - chunk_start_in_part
-                            if actual_rows_in_chunk <= 0: continue
-                            chunks_in_pass.append((part_file_path_abs, chunk_start_in_part, chunk_end_in_part, actual_rows_in_chunk))
-
-                    # 2. 计算每个活动事件在此 Pass 的需求
+                    # 2. 计算每个活动事件在此 Pass 的需求（并行优化）
                     event_needs_in_pass: Dict[int, Dict[str, Union[float, int]]] = {}
-                    for original_event_id in list(current_active_tasks_in_bin.keys()):
-                        n_still_needed_total = current_active_tasks_in_bin[original_event_id]
-                        plan_for_event = next((p for p in self.sampling_plans if p['event_id'] == original_event_id), None)
-                        if not plan_for_event: continue
-                        n_total_required = plan_for_event['samples_per_bin'].get(energy_bin, 0)
-                        plan_idx = self.event_id_to_index.get(original_event_id, -1);
-                        if plan_idx == -1: continue
-                        n_collected_so_far = self.event_rows_collected[plan_idx].get(energy_bin, 0)
-                        if n_collected_so_far >= n_total_required:
-                             if original_event_id in current_active_tasks_in_bin: del current_active_tasks_in_bin[original_event_id]
-                             continue
-                        current_pass_start_row_target = (pass_num - 1) * total_rows_in_bin
-                        rows_target_in_pass = 0
-                        if current_pass_start_row_target < n_total_required: rows_target_in_pass = min(total_rows_in_bin, n_total_required - current_pass_start_row_target)
-                        if rows_target_in_pass <= 0: continue
-                        p_eff = rows_target_in_pass / total_rows_in_bin
-                        # Store needed info for deterministic allocation
-                        event_needs_in_pass[original_event_id] = {
-                            'p_eff': p_eff,
-                            'n_still_needed': n_still_needed_total, # Overall remaining needed
-                            'target_for_pass': round(rows_target_in_pass) # Integer target for this pass
-                        }
+                    event_needs_calc_start = time.time()
+                    active_events = list(current_active_tasks_in_bin.keys())
+                    
+                    if len(active_events) > 50 and self.num_workers > 1:
+                        # 使用并行处理计算事件需求
+                        logger.info(f"    并行计算 {len(active_events)} 个事件的需求...")
+                        
+                        def calc_event_need(event_id, still_needed_total, total_rows_in_bin, pass_num):
+                            """计算单个事件的需求信息"""
+                            try:
+                                plan_for_event = next((p for p in self.sampling_plans if p['event_id'] == event_id), None)
+                                if not plan_for_event: 
+                                    return event_id, None
+                                    
+                                n_total_required = plan_for_event['samples_per_bin'].get(energy_bin, 0)
+                                plan_idx = self.event_id_to_index.get(event_id, -1)
+                                if plan_idx == -1: 
+                                    return event_id, None
+                                    
+                                n_collected_so_far = self.event_rows_collected[plan_idx].get(energy_bin, 0)
+                                if n_collected_so_far >= n_total_required:
+                                    return event_id, None
+                                    
+                                current_pass_start_row_target = (pass_num - 1) * total_rows_in_bin
+                                rows_target_in_pass = 0
+                                if current_pass_start_row_target < n_total_required: 
+                                    rows_target_in_pass = min(total_rows_in_bin, n_total_required - current_pass_start_row_target)
+                                    
+                                if rows_target_in_pass <= 0: 
+                                    return event_id, None
+                                    
+                                p_eff = rows_target_in_pass / total_rows_in_bin
+                                return event_id, {
+                                    'p_eff': p_eff,
+                                    'n_still_needed': still_needed_total,
+                                    'target_for_pass': round(rows_target_in_pass)
+                                }
+                            except Exception as e:
+                                logger.error(f"计算事件 {event_id} 需求时出错: {e}")
+                                return event_id, None
+                        
+                        # 使用线程池并行计算事件需求
+                        with concurrent.futures.ThreadPoolExecutor(max_workers=min(self.num_workers, len(active_events))) as executor:
+                            futures = []
+                            for event_id in active_events:
+                                futures.append(executor.submit(
+                                    calc_event_need,
+                                    event_id,
+                                    current_active_tasks_in_bin[event_id],
+                                    total_rows_in_bin,
+                                    pass_num
+                                ))
+                                
+                            # 显示进度并收集结果
+                            valid_events = 0
+                            for i, future in enumerate(concurrent.futures.as_completed(futures)):
+                                try:
+                                    event_id, result = future.result()
+                                    if result is not None:
+                                        event_needs_in_pass[event_id] = result
+                                        valid_events += 1
+                                    
+                                    # 每处理20%的事件显示一次进度
+                                    if (i+1) % max(1, len(futures)//5) == 0:
+                                        logger.info(f"      需求计算进度: {i+1}/{len(futures)} 事件, 有效事件: {valid_events}")
+                                        
+                                except Exception as e:
+                                    logger.error(f"处理事件需求结果时出错: {e}")
+                    else:
+                        # 原始串行处理
+                        for i, original_event_id in enumerate(active_events):
+                            n_still_needed_total = current_active_tasks_in_bin[original_event_id]
+                            plan_for_event = next((p for p in self.sampling_plans if p['event_id'] == original_event_id), None)
+                            if not plan_for_event: continue
+                            n_total_required = plan_for_event['samples_per_bin'].get(energy_bin, 0)
+                            plan_idx = self.event_id_to_index.get(original_event_id, -1);
+                            if plan_idx == -1: continue
+                            n_collected_so_far = self.event_rows_collected[plan_idx].get(energy_bin, 0)
+                            if n_collected_so_far >= n_total_required:
+                                 if original_event_id in current_active_tasks_in_bin: del current_active_tasks_in_bin[original_event_id]
+                                 continue
+                            current_pass_start_row_target = (pass_num - 1) * total_rows_in_bin
+                            rows_target_in_pass = 0
+                            if current_pass_start_row_target < n_total_required: rows_target_in_pass = min(total_rows_in_bin, n_total_required - current_pass_start_row_target)
+                            if rows_target_in_pass <= 0: continue
+                            p_eff = rows_target_in_pass / total_rows_in_bin
+                            
+                            # Store needed info for deterministic allocation
+                            event_needs_in_pass[original_event_id] = {
+                                'p_eff': p_eff,
+                                'n_still_needed': n_still_needed_total, # Overall remaining needed
+                                'target_for_pass': round(rows_target_in_pass) # Integer target for this pass
+                            }
+                            
+                            # 每处理100个事件显示一次进度
+                            if (i+1) % 100 == 0 and i > 0:
+                                logger.info(f"      需求计算进度: {i+1}/{len(active_events)} 事件")
+                    
+                    event_needs_calc_time = time.time() - event_needs_calc_start
+                    if len(active_events) > 100:
+                        logger.info(f"    需求计算完成: {len(event_needs_in_pass)}/{len(active_events)} 个有效事件，耗时: {event_needs_calc_time:.3f}s")
+                    
+                    # 如果没有有效事件需要在此Pass处理，跳过剩余操作
+                    if not event_needs_in_pass:
+                        logger.info(f"    Pass {pass_num}: 无有效事件需要处理，跳过。")
+                        continue
 
-                    # 3. 确定性地为每个块/事件分配抽样数
+                    # 3. 并行确定性分配 - 使用线程池并行处理每个事件的分配
                     final_sampling_needs: Dict[Tuple[str, int], Dict[int, int]] = {} # {(path, start): {event_id: n_to_sample}}
                     chunk_info_map = {(path, start): rows for path, start, end, rows in chunks_in_pass} # Lookup map
-
-                    for original_event_id, needs in event_needs_in_pass.items():
-                        p_eff = needs['p_eff']
-                        n_still_needed = needs['n_still_needed']
-                        target_for_pass = needs['target_for_pass']
-
-                        # Get ideal allocation across chunks for this event/pass
-                        chunk_allocations_for_event = self._distribute_deterministically(
-                            chunks_info=chunks_in_pass, p_eff=p_eff, total_target_for_pass=target_for_pass
-                        )
-
-                        # Apply caps (still_needed, rows_in_chunk) and populate final_sampling_needs
-                        temp_still_needed_for_event = n_still_needed # Track remaining for this event across chunks
-                        processed_in_event_pass = 0 # Track assigned in this pass
-                        for (path, start), n_deterministic in chunk_allocations_for_event.items():
-                            rows_in_chunk = chunk_info_map.get((path, start), 0)
-                            if rows_in_chunk == 0: continue
-
-                            # Cap 1: By total remaining needed for this event overall
-                            n_capped1 = min(n_deterministic, temp_still_needed_for_event)
-                            # Cap 2: By rows available in this specific chunk
-                            n_capped2 = min(n_capped1, rows_in_chunk)
-                            # Cap 3: By remaining target specifically for this pass
-                            n_to_sample = max(0, min(n_capped2, target_for_pass - processed_in_event_pass))
-
-                            if n_to_sample > 0:
-                                task_key = (path, start)
-                                if task_key not in final_sampling_needs: final_sampling_needs[task_key] = {}
-                                final_sampling_needs[task_key][original_event_id] = n_to_sample
-
-                                # Update tracking variables
-                                temp_still_needed_for_event -= n_to_sample
-                                processed_in_event_pass += n_to_sample
+                    
+                    # 开始并行分配计算
+                    chunk_allocation_start_time = time.time()
+                    
+                    if self.num_workers > 1 and len(event_needs_in_pass) > 1:
+                        logger.info(f"    使用 {self.num_workers} 个线程并行计算 {len(event_needs_in_pass)} 个事件的分配方案...")
+                        with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_workers) as executor:
+                            # 为每个事件创建并行任务
+                            allocation_futures = {}
+                            for original_event_id, needs in event_needs_in_pass.items():
+                                future = executor.submit(
+                                    self._distribute_deterministically,
+                                    chunks_in_pass,
+                                    needs['p_eff'],
+                                    needs['target_for_pass']
+                                )
+                                allocation_futures[original_event_id] = future
+                            
+                            # 显示进度并收集分配结果
+                            processed_allocations = 0
+                            for i, (original_event_id, future) in enumerate(allocation_futures.items()):
+                                try:
+                                    chunk_allocations_for_event = future.result()
+                                    n_still_needed = event_needs_in_pass[original_event_id]['n_still_needed']
+                                    target_for_pass = event_needs_in_pass[original_event_id]['target_for_pass']
+                                    
+                                    # 应用相同的上限和填充最终分配
+                                    temp_still_needed_for_event = n_still_needed
+                                    processed_in_event_pass = 0
+                                    
+                                    for (path, start), n_deterministic in chunk_allocations_for_event.items():
+                                        rows_in_chunk = chunk_info_map.get((path, start), 0)
+                                        if rows_in_chunk == 0: continue
+                                        
+                                        # 应用三重上限
+                                        n_capped1 = min(n_deterministic, temp_still_needed_for_event)
+                                        n_capped2 = min(n_capped1, rows_in_chunk)
+                                        n_to_sample = max(0, min(n_capped2, target_for_pass - processed_in_event_pass))
+                                        
+                                        if n_to_sample > 0:
+                                            task_key = (path, start)
+                                            if task_key not in final_sampling_needs: final_sampling_needs[task_key] = {}
+                                            final_sampling_needs[task_key][original_event_id] = n_to_sample
+                                            
+                                            # 更新追踪变量
+                                            temp_still_needed_for_event -= n_to_sample
+                                            processed_in_event_pass += n_to_sample
+                                    
+                                    processed_allocations += 1
+                                    # 每处理20%的分配或至少10个事件显示一次进度
+                                    progress_interval = max(1, min(10, len(allocation_futures)//5))
+                                    if (i+1) % progress_interval == 0:
+                                        logger.info(f"      分配计算进度: {i+1}/{len(allocation_futures)} 事件")
+                                        
+                                except Exception as e:
+                                    logger.exception(f"    计算事件 {original_event_id} 的分配方案时出错: {e}")
+                    else:
+                        # 退回到串行处理（事件少时更高效）
+                        for original_event_id, needs in event_needs_in_pass.items():
+                            p_eff = needs['p_eff']
+                            n_still_needed = needs['n_still_needed']
+                            target_for_pass = needs['target_for_pass']
+                            
+                            chunk_allocations_for_event = self._distribute_deterministically(
+                                chunks_in_pass, p_eff, target_for_pass
+                            )
+                            
+                            # 应用上限和填充最终分配
+                            temp_still_needed_for_event = n_still_needed
+                            processed_in_event_pass = 0
+                            
+                            for (path, start), n_deterministic in chunk_allocations_for_event.items():
+                                rows_in_chunk = chunk_info_map.get((path, start), 0)
+                                if rows_in_chunk == 0: continue
+                                
+                                # 应用三重上限
+                                n_capped1 = min(n_deterministic, temp_still_needed_for_event)
+                                n_capped2 = min(n_capped1, rows_in_chunk)
+                                n_to_sample = max(0, min(n_capped2, target_for_pass - processed_in_event_pass))
+                                
+                                if n_to_sample > 0:
+                                    task_key = (path, start)
+                                    if task_key not in final_sampling_needs: final_sampling_needs[task_key] = {}
+                                    final_sampling_needs[task_key][original_event_id] = n_to_sample
+                                    
+                                    # 更新追踪变量
+                                    temp_still_needed_for_event -= n_to_sample
+                                    processed_in_event_pass += n_to_sample
+                    
+                    allocation_time = time.time() - chunk_allocation_start_time
+                    if len(event_needs_in_pass) > 1 and len(chunks_in_pass) > 100:
+                        logger.info(f"    分配计算完成，耗时: {allocation_time:.3f}s")
 
                     # 4. 创建最终的任务列表
                     tasks_for_pool.clear() # Clear list before populating for the pass
-                    for (path, start), needs_dict in final_sampling_needs.items():
+                    task_creation_start = time.time()
+                    total_task_items = len(final_sampling_needs)
+                    
+                    if total_task_items > 100:
+                        logger.info(f"    开始创建 {total_task_items} 个任务...")
+                    
+                    for i, ((path, start), needs_dict) in enumerate(final_sampling_needs.items()):
                         corresponding_chunk = next((c for c in chunks_in_pass if c[0] == path and c[1] == start), None)
                         if not corresponding_chunk: continue
                         end_row = corresponding_chunk[2]
-
-                        # *** 保留 TaskGen 调试日志 ***
-                        if energy_bin == '0.6MeV' and 0 in needs_dict and start < 3 * chunk_rows:
-                             logger.debug(f"DEBUG TaskGen 0.6MeV E:0 P:{pass_num} Chunk:[{start}:{end_row}] n_final(deterministic):{needs_dict[0]}")
 
                         task_seed = self._get_next_seed()
                         task_info = {
@@ -423,6 +788,15 @@ class SamplingExecutor:
                             'dataset_name': dataset_name, 'num_layers': self.num_layers, 'rng_seed': task_seed
                         }
                         tasks_for_pool.append(task_info)
+                        
+                        # 显示进度
+                        if (i+1) % max(1, min(10000, total_task_items // 5)) == 0:
+                            tasks_percentage = (i+1) / total_task_items * 100
+                            logger.info(f"      任务创建进度: {i+1}/{total_task_items} ({tasks_percentage:.1f}%)")
+                    
+                    task_creation_time = time.time() - task_creation_start
+                    if total_task_items > 100:
+                        logger.info(f"    任务创建完成: {len(tasks_for_pool)}/{total_task_items} 有效任务，耗时: {task_creation_time:.3f}s")
 
                     # 5. Execute tasks (rest of the loop as before)
                     if tasks_for_pool:
@@ -434,9 +808,6 @@ class SamplingExecutor:
                                 task_submitted = futures[future]
                                 try:
                                     partial_sums, actual_counts = future.result()
-                                    # ... (结果聚合逻辑不变) ...
-                                    if energy_bin == '0.6MeV' and 0 in actual_counts:
-                                         chunk_id = f"{os.path.basename(task_submitted['part_file_path'])}[{task_submitted['chunk_start_row']}:{task_submitted['chunk_end_row']}]"; logger.debug(f"DEBUG AGGREGATE: Received count={actual_counts[0]} for E:0 Bin:0.6MeV from worker (Chunk: {chunk_id}).")
                                     for original_event_id, summed_array in partial_sums.items():
                                         plan_idx = self.event_id_to_index.get(original_event_id);
                                         if plan_idx is not None: self.event_sums[plan_idx] += summed_array
@@ -446,7 +817,6 @@ class SamplingExecutor:
                                             plan_idx = self.event_id_to_index.get(original_event_id)
                                             if plan_idx is not None:
                                                 current_collected = self.event_rows_collected[plan_idx].get(energy_bin, 0); new_collected = current_collected + count
-                                                if energy_bin == '0.6MeV' and original_event_id == 0: logger.debug(f"DEBUG AGGREGATE: Updating 0.6MeV E:{original_event_id} (idx:{plan_idx}). Adding count={count} to current={current_collected}. New total={new_collected}")
                                                 self.event_rows_collected[plan_idx][energy_bin] = new_collected
                                                 if original_event_id in current_active_tasks_in_bin:
                                                     current_active_tasks_in_bin[original_event_id] -= count
@@ -492,6 +862,11 @@ def finalize_run(run_info: Dict[str, Any], final_event_sums: List[np.ndarray], f
     output_dir = run_info['output_dir']; run_name = run_info['run_name']; num_layers = run_info['num_layers']
     sampling_plans = run_info['sampling_plans']; original_num_events = run_info['original_num_events']
     num_valid_events = run_info['num_valid_events']; checkpoint_path = os.path.join(output_dir, CHECKPOINT_FILENAME)
+    
+    # 获取所有可能的能量点
+    all_energy_bins = sorted(run_info['hdf5_index'].keys(), key=lambda x: float(x.replace('MeV','')))
+    logger.info(f"将输出 {len(all_energy_bins)} 个能量点: {', '.join(all_energy_bins)}")
+    
     output_file_count = 0
     if num_valid_events > 0 and len(final_event_sums) == num_valid_events and len(final_event_counts) == num_valid_events:
         logger.info(f"正在为 {num_valid_events} 个有效事件生成输出文件...")
@@ -500,11 +875,10 @@ def finalize_run(run_info: Dict[str, Any], final_event_sums: List[np.ndarray], f
             original_event_id = plan['event_id']; final_sum = final_event_sums[plan_idx]
             actual_counts_this_event = final_event_counts[plan_idx]; relevant_counts = {}
             for energy_key in plan['samples_per_bin']: relevant_counts[energy_key] = actual_counts_this_event.get(energy_key, 0)
-            if original_event_id == 0: logger.debug(f"DEBUG SAVE: Final counts dict passed to save_output_file for E0: {relevant_counts}")
-            if any(v > 0 for v in relevant_counts.values()):
-                save_output_file(output_dir, run_name, original_event_id, plan, final_sum, relevant_counts, num_layers, original_num_events)
-                output_file_count += 1
-            else: logger.warning(f"事件 {original_event_id} (idx {plan_idx}) 未抽取数据，不生成文件。")
+            
+            # 即使没有样本，也输出文件
+            save_output_file(output_dir, run_name, original_event_id, plan, final_sum, relevant_counts, num_layers, original_num_events, all_energy_bins)
+            output_file_count += 1
     else: logger.error("最终结果列表长度与有效事件数不匹配，无法生成输出文件。")
     logger.info(f"共生成 {output_file_count} 个输出文件。")
     # Clean up checkpoint file
@@ -528,12 +902,12 @@ def main_orchestrator(args=None, args_list=None):
     parser.add_argument("--resume", action='store_true', help="尝试从检查点恢复")
     parser.add_argument("--log_level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"], help="日志级别")
     parser.add_argument("--force_rerun", action='store_true', help="强制忽略检查点")
+    parser.add_argument("--clean_cache", action='store_true', help="清除所有块信息缓存")
 
     if args is None and args_list is None:
         args = parser.parse_args()
     elif args_list is not None:
         args = parser.parse_args(args_list)
-
 
     logger.setLevel(getattr(logging, args.log_level.upper()))
     if args.log_level == "DEBUG": logger.info("已启用 DEBUG 日志级别。")
@@ -545,6 +919,26 @@ def main_orchestrator(args=None, args_list=None):
     final_event_counts = None
 
     try:
+        # --- 检查是否需要清除缓存 ---
+        if args.clean_cache:
+            try:
+                config = load_json(args.config)
+                output_dir = config['output_directory']
+                cache_dir = os.path.join(output_dir, "chunks_cache")
+                if os.path.exists(cache_dir):
+                    import shutil
+                    shutil.rmtree(cache_dir)
+                    logger.info(f"已清除块信息缓存目录: {cache_dir}")
+                else:
+                    logger.info(f"未找到块信息缓存目录: {cache_dir}")
+                if not args.force_rerun and not args.resume:
+                    logger.info("缓存已清除，退出程序。如需继续执行，请移除 --clean_cache 参数。")
+                    return
+            except Exception as e:
+                logger.error(f"清除缓存时发生错误: {e}")
+                if not args.force_rerun and not args.resume:
+                    return
+
         # --- 阶段 1: 规划 ---
         logger.info("=== Stage 1: Planning ===")
         config = load_json(args.config)
@@ -625,5 +1019,5 @@ if __name__ == "__main__":
     try:
         import h5py; import numpy; import scipy
     except ImportError as e: print(f"错误: 缺少必要的库: {e}. 请确保 h5py, numpy, scipy 已安装。", file=sys.stderr); sys.exit(1)
-    main_orchestrator()
-    # main_orchestrator(args_list=["--config", "config_test.json", "--workers", "16", "--resume", "--log_level", "INFO"])
+    # main_orchestrator()
+    main_orchestrator(args_list=["--config", "config_test.json", "--workers", "16", "--force_rerun", "--log_level", "INFO"])

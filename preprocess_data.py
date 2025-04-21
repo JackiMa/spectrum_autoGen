@@ -94,7 +94,7 @@ def convert_energy_level_to_hdf5(task_info: Tuple[str, List[str], str, int, int]
 
             try:
                 # 使用分块读取CSV，指定类型以提高效率，处理坏行
-                chunk_size = 100000 # 读取CSV的块大小
+                chunk_size = DEFAULT_CHUNK_SHAPE[0] # 读取CSV的块大小
                 for chunk_index, chunk in enumerate(pd.read_csv(
                         csv_file,
                         skiprows=1,          # 跳过表头
@@ -149,7 +149,7 @@ def convert_energy_level_to_hdf5(task_info: Tuple[str, List[str], str, int, int]
                                 dtype='float64',                 # 使用 float64
                                 chunks=actual_chunk_shape,       # 使用计算出的块大小
                                 compression="gzip",              # 启用压缩
-                                compression_opts=4               # Gzip 压缩级别 (0-9)
+                                compression_opts=8               # Gzip 压缩级别 (0-9)
                             )
                             # 存储元数据 (属性)
                             current_dataset.attrs['energy_level'] = energy_level_name
