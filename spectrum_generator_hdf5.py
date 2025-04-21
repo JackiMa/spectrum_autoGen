@@ -141,9 +141,7 @@ def sample_chunk_task(task_info: Dict[str, Any]) -> Tuple[Dict[int, np.ndarray],
 # --- 阶段 2: 执行抽样任务 (OOP Class) ---
 class SamplingExecutor:
     """负责执行抽样、管理状态和并行处理"""
-    # ... (__init__, _initialize_state, _prepare_seeds, _get_next_seed, _save_current_checkpoint 保持不变) ...
     def __init__(self, run_info: Dict[str, Any], num_workers: int, resume: bool, force_rerun: bool):
-        # ... (同上) ...
         self.config = run_info['config']; self.hdf5_index = run_info['hdf5_index']; self.sampling_plans = run_info['sampling_plans']
         self.output_dir = run_info['output_dir']; self.num_layers = run_info['num_layers']; self.num_events = run_info['num_valid_events']
         self.event_id_to_index = run_info['event_id_to_index']; self.original_num_events = run_info['original_num_events']
@@ -153,8 +151,12 @@ class SamplingExecutor:
         self.event_rows_collected: List[Dict[str, int]] = []; self.start_bin_index: int = 0; self.execution_successful: bool = True
         self.worker_rngs_seeds = None; self.master_rng_for_tasks = None
 
+        # 如果random_seed为None，则使用当前时间作为种子
+        if self.base_seed is None:
+            self.base_seed = int(time.time())
+
     def _initialize_state(self):
-        # ... (同上) ...
+
         self.event_sums = [np.zeros(self.num_layers, dtype=np.float64) for _ in range(self.num_events)]
         self.event_rows_collected = [{} for _ in range(self.num_events)]
         self.start_bin_index = 0
@@ -197,7 +199,6 @@ class SamplingExecutor:
         if len(self.event_rows_collected) != self.num_events: self.event_rows_collected = [{} for _ in range(self.num_events)]
 
     def _prepare_seeds(self):
-        # ... (修复后的版本) ...
         ss_main = SeedSequence(self.base_seed)
         estimated_tasks = 0
         energy_bins_in_index = sorted(self.hdf5_index.keys(), key=lambda x: float(x.replace('MeV','')))
@@ -225,7 +226,6 @@ class SamplingExecutor:
             logger.info("将动态生成随机种子。")
 
     def _get_next_seed(self) -> int:
-        # ... (与上一版本相同) ...
         try:
             if self.worker_rngs_seeds: return next(self.worker_rngs_seeds)
             else:

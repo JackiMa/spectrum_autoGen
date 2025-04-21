@@ -9,6 +9,7 @@ from typing import Dict, List, Any, Tuple, Optional, Union
 from numpy.random import Generator, PCG64, SeedSequence
 from scipy.stats import norm
 import argparse
+import time
 
 # --- 日志配置 ---
 logging.basicConfig(level=logging.INFO,
@@ -47,6 +48,9 @@ class SamplingPlanner:
         self.method = config['generation_method']
         self.method_config = config.get(self.method)
         self.base_seed = config.get('random_seed', None)
+        # 如果random_seed为None，则使用当前时间作为种子
+        if self.base_seed is None:
+            self.base_seed = int(time.time())
         if not self.method_config:
             raise ValueError(f"配置中找不到方法 '{self.method}' 的详细信息")
 
