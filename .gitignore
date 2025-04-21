@@ -1,0 +1,4 @@
+*.hdf5
+*.csv
+*.txt
+__pycache__
