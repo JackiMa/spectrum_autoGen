@@ -1,4 +1,525 @@
 {
+    "0.1MeV": {
+        "total_rows_in_bin": 1015849608,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0000.hdf5",
+                "rows": 10000000,
+                "part_num": 0
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0001.hdf5",
+                "rows": 10000000,
+                "part_num": 1
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0002.hdf5",
+                "rows": 10000000,
+                "part_num": 2
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0003.hdf5",
+                "rows": 10000000,
+                "part_num": 3
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0004.hdf5",
+                "rows": 10000000,
+                "part_num": 4
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0005.hdf5",
+                "rows": 10000000,
+                "part_num": 5
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0006.hdf5",
+                "rows": 10000000,
+                "part_num": 6
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0007.hdf5",
+                "rows": 10000000,
+                "part_num": 7
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0008.hdf5",
+                "rows": 10000000,
+                "part_num": 8
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0009.hdf5",
+                "rows": 10000000,
+                "part_num": 9
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0010.hdf5",
+                "rows": 10000000,
+                "part_num": 10
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0011.hdf5",
+                "rows": 10000000,
+                "part_num": 11
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0012.hdf5",
+                "rows": 10000000,
+                "part_num": 12
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0013.hdf5",
+                "rows": 10000000,
+                "part_num": 13
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0014.hdf5",
+                "rows": 10000000,
+                "part_num": 14
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0015.hdf5",
+                "rows": 10000000,
+                "part_num": 15
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0016.hdf5",
+                "rows": 10000000,
+                "part_num": 16
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0017.hdf5",
+                "rows": 10000000,
+                "part_num": 17
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0018.hdf5",
+                "rows": 10000000,
+                "part_num": 18
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0019.hdf5",
+                "rows": 10000000,
+                "part_num": 19
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0020.hdf5",
+                "rows": 10000000,
+                "part_num": 20
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0021.hdf5",
+                "rows": 10000000,
+                "part_num": 21
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0022.hdf5",
+                "rows": 10000000,
+                "part_num": 22
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0023.hdf5",
+                "rows": 10000000,
+                "part_num": 23
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0024.hdf5",
+                "rows": 10000000,
+                "part_num": 24
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0025.hdf5",
+                "rows": 10000000,
+                "part_num": 25
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0026.hdf5",
+                "rows": 10000000,
+                "part_num": 26
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0027.hdf5",
+                "rows": 10000000,
+                "part_num": 27
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0028.hdf5",
+                "rows": 10000000,
+                "part_num": 28
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0029.hdf5",
+                "rows": 10000000,
+                "part_num": 29
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0030.hdf5",
+                "rows": 10000000,
+                "part_num": 30
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0031.hdf5",
+                "rows": 10000000,
+                "part_num": 31
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0032.hdf5",
+                "rows": 10000000,
+                "part_num": 32
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0033.hdf5",
+                "rows": 10000000,
+                "part_num": 33
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0034.hdf5",
+                "rows": 10000000,
+                "part_num": 34
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0035.hdf5",
+                "rows": 10000000,
+                "part_num": 35
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0036.hdf5",
+                "rows": 10000000,
+                "part_num": 36
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0037.hdf5",
+                "rows": 10000000,
+                "part_num": 37
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0038.hdf5",
+                "rows": 10000000,
+                "part_num": 38
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0039.hdf5",
+                "rows": 10000000,
+                "part_num": 39
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0040.hdf5",
+                "rows": 10000000,
+                "part_num": 40
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0041.hdf5",
+                "rows": 10000000,
+                "part_num": 41
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0042.hdf5",
+                "rows": 10000000,
+                "part_num": 42
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0043.hdf5",
+                "rows": 10000000,
+                "part_num": 43
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0044.hdf5",
+                "rows": 10000000,
+                "part_num": 44
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0045.hdf5",
+                "rows": 10000000,
+                "part_num": 45
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0046.hdf5",
+                "rows": 10000000,
+                "part_num": 46
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0047.hdf5",
+                "rows": 10000000,
+                "part_num": 47
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0048.hdf5",
+                "rows": 10000000,
+                "part_num": 48
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0049.hdf5",
+                "rows": 10000000,
+                "part_num": 49
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0050.hdf5",
+                "rows": 10000000,
+                "part_num": 50
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0051.hdf5",
+                "rows": 10000000,
+                "part_num": 51
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0052.hdf5",
+                "rows": 10000000,
+                "part_num": 52
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0053.hdf5",
+                "rows": 10000000,
+                "part_num": 53
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0054.hdf5",
+                "rows": 10000000,
+                "part_num": 54
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0055.hdf5",
+                "rows": 10000000,
+                "part_num": 55
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0056.hdf5",
+                "rows": 10000000,
+                "part_num": 56
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0057.hdf5",
+                "rows": 10000000,
+                "part_num": 57
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0058.hdf5",
+                "rows": 10000000,
+                "part_num": 58
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0059.hdf5",
+                "rows": 10000000,
+                "part_num": 59
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0060.hdf5",
+                "rows": 10000000,
+                "part_num": 60
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0061.hdf5",
+                "rows": 10000000,
+                "part_num": 61
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0062.hdf5",
+                "rows": 10000000,
+                "part_num": 62
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0063.hdf5",
+                "rows": 10000000,
+                "part_num": 63
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0064.hdf5",
+                "rows": 10000000,
+                "part_num": 64
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0065.hdf5",
+                "rows": 10000000,
+                "part_num": 65
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0066.hdf5",
+                "rows": 10000000,
+                "part_num": 66
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0067.hdf5",
+                "rows": 10000000,
+                "part_num": 67
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0068.hdf5",
+                "rows": 10000000,
+                "part_num": 68
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0069.hdf5",
+                "rows": 10000000,
+                "part_num": 69
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0070.hdf5",
+                "rows": 10000000,
+                "part_num": 70
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0071.hdf5",
+                "rows": 10000000,
+                "part_num": 71
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0072.hdf5",
+                "rows": 10000000,
+                "part_num": 72
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0073.hdf5",
+                "rows": 10000000,
+                "part_num": 73
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0074.hdf5",
+                "rows": 10000000,
+                "part_num": 74
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0075.hdf5",
+                "rows": 10000000,
+                "part_num": 75
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0076.hdf5",
+                "rows": 10000000,
+                "part_num": 76
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0077.hdf5",
+                "rows": 10000000,
+                "part_num": 77
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0078.hdf5",
+                "rows": 10000000,
+                "part_num": 78
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0079.hdf5",
+                "rows": 10000000,
+                "part_num": 79
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0080.hdf5",
+                "rows": 10000000,
+                "part_num": 80
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0081.hdf5",
+                "rows": 10000000,
+                "part_num": 81
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0082.hdf5",
+                "rows": 10000000,
+                "part_num": 82
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0083.hdf5",
+                "rows": 10000000,
+                "part_num": 83
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0084.hdf5",
+                "rows": 10000000,
+                "part_num": 84
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0085.hdf5",
+                "rows": 10000000,
+                "part_num": 85
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0086.hdf5",
+                "rows": 10000000,
+                "part_num": 86
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0087.hdf5",
+                "rows": 10000000,
+                "part_num": 87
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0088.hdf5",
+                "rows": 10000000,
+                "part_num": 88
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0089.hdf5",
+                "rows": 10000000,
+                "part_num": 89
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0090.hdf5",
+                "rows": 10000000,
+                "part_num": 90
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0091.hdf5",
+                "rows": 10000000,
+                "part_num": 91
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0092.hdf5",
+                "rows": 10000000,
+                "part_num": 92
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0093.hdf5",
+                "rows": 10000000,
+                "part_num": 93
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0094.hdf5",
+                "rows": 10000000,
+                "part_num": 94
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0095.hdf5",
+                "rows": 10000000,
+                "part_num": 95
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0096.hdf5",
+                "rows": 10000000,
+                "part_num": 96
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0097.hdf5",
+                "rows": 10000000,
+                "part_num": 97
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0098.hdf5",
+                "rows": 10000000,
+                "part_num": 98
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0099.hdf5",
+                "rows": 10000000,
+                "part_num": 99
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0100.hdf5",
+                "rows": 10000000,
+                "part_num": 100
+            },
+            {
+                "path": "0.1MeV\\e_0.10MeV_part_0101.hdf5",
+                "rows": 5849608,
+                "part_num": 101
+            }
+        ]
+    },
     "0.5MeV": {
         "total_rows_in_bin": 126981201,
         "rows_per_part_nominal": 10000000,

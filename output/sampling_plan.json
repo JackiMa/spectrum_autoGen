@@ -2,121 +2,121 @@
     {
         "event_id": 0,
         "samples_per_bin": {
-            "0.5MeV": 1067109
+            "0.5MeV": 1497377
         }
     },
     {
         "event_id": 1,
         "samples_per_bin": {
-            "0.5MeV": 1459218
+            "0.5MeV": 1333818
         }
     },
     {
         "event_id": 2,
         "samples_per_bin": {
-            "0.5MeV": 1115036
+            "0.5MeV": 1054346
         }
     },
     {
         "event_id": 3,
         "samples_per_bin": {
-            "0.5MeV": 1838458
+            "0.5MeV": 1765221
         }
     },
     {
         "event_id": 4,
         "samples_per_bin": {
-            "0.5MeV": 1236163
+            "0.5MeV": 1792398
         }
     },
     {
         "event_id": 5,
         "samples_per_bin": {
-            "0.5MeV": 1122324
+            "0.5MeV": 1091052
         }
     },
     {
         "event_id": 6,
         "samples_per_bin": {
-            "0.5MeV": 1456202
+            "0.5MeV": 1278524
         }
     },
     {
         "event_id": 7,
         "samples_per_bin": {
-            "0.5MeV": 1478636
+            "0.5MeV": 1508532
         }
     },
     {
         "event_id": 8,
         "samples_per_bin": {
-            "0.5MeV": 1321673
+            "0.5MeV": 1387555
         }
     },
     {
         "event_id": 9,
         "samples_per_bin": {
-            "0.5MeV": 1792822
+            "0.5MeV": 1527814
         }
     },
     {
         "event_id": 10,
         "samples_per_bin": {
-            "0.5MeV": 1519813
+            "0.5MeV": 1757222
         }
     },
     {
         "event_id": 11,
         "samples_per_bin": {
-            "0.5MeV": 1537358
+            "0.5MeV": 1548791
         }
     },
     {
         "event_id": 12,
         "samples_per_bin": {
-            "0.5MeV": 1946034
+            "0.5MeV": 1012508
         }
     },
     {
         "event_id": 13,
         "samples_per_bin": {
-            "0.5MeV": 1512979
+            "0.5MeV": 1416377
         }
     },
     {
         "event_id": 14,
         "samples_per_bin": {
-            "0.5MeV": 1074236
+            "0.5MeV": 1062344
         }
     },
     {
         "event_id": 15,
         "samples_per_bin": {
-            "0.5MeV": 1600191
+            "0.5MeV": 1669762
         }
     },
     {
         "event_id": 16,
         "samples_per_bin": {
-            "0.5MeV": 1929379
+            "0.5MeV": 1702885
         }
     },
     {
         "event_id": 17,
         "samples_per_bin": {
-            "0.5MeV": 1840452
+            "0.5MeV": 1072130
         }
     },
     {
         "event_id": 18,
         "samples_per_bin": {
-            "0.5MeV": 1831716
+            "0.5MeV": 1183036
         }
     },
     {
         "event_id": 19,
         "samples_per_bin": {
-            "0.5MeV": 1955158
+            "0.5MeV": 1474407
         }
     }
 ]

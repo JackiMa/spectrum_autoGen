@@ -2,7 +2,7 @@
     "simulation_run_name": "test_run",
     "num_datasets_to_generate": 20,
     "generation_method": "method1",
-    "input_data_directory": "./sim_data_hd5_V3",
+    "input_data_directory": "./sim_data_hd5_V2",
     "num_detector_layers": 20,
     "random_seed": null,
     "output_directory": "./output",

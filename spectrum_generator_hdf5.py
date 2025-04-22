@@ -59,7 +59,7 @@ def save_output_file(output_dir: str, run_name: str, event_id: int,
                      plan: Dict[str, Any], final_sum: np.ndarray,
                      actual_counts_per_bin: Dict[str, int], num_layers: int,
                      num_total_events: int, all_energy_bins: List[str] = None):
-    padding_width = len(str(num_total_events)); filename = f"{run_name}_event_{event_id:0{padding_width}d}.txt"; filepath = os.path.join(output_dir, filename)
+    padding_width = len(str(num_total_events)); filename = f"{run_name}_{time.strftime('%Y%m%d%H%M%S')}_event_{event_id:0{padding_width}d}.txt"; filepath = os.path.join(output_dir, filename)
     try:
         # 不再跳过空的actual_counts_per_bin，而是输出所有能量点
         if all_energy_bins is None or len(all_energy_bins) == 0:
@@ -89,8 +89,8 @@ def save_output_file(output_dir: str, run_name: str, event_id: int,
         line3 = ", ".join(map(str, range(1, num_layers + 1)))
         line4 = np.array2string(final_sum, separator=', ', formatter={'float_kind':lambda x: f"{x:.8e}"},threshold=np.inf,max_line_width=np.inf).replace('[','').replace(']','')
         
-        content = f"{line1}\n{line2}\n\n\n{line3}\n{line4}" # No trailing newline
-        logger.debug(f"DEBUG SAVE: 事件 {event_id}, 写入第二行: {line2}") # Keep debug
+        content = f"{line1}\n{line2}\n\n\n{line3}\n{line4}"
+        logger.debug(f"DEBUG SAVE: 事件 {event_id}, 写入第二行: {line2}") 
         with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
         logger.info(f"已保存事件 {event_id} 的输出文件: {filename}")
     except Exception as e: logger.exception(f"写入输出文件 {filepath} 时发生未知错误")
@@ -634,7 +634,7 @@ class SamplingExecutor:
                                 except Exception as e:
                                     logger.error(f"处理事件需求结果时出错: {e}")
                     else:
-                        # 原始串行处理
+                        # 串行处理
                         for i, original_event_id in enumerate(active_events):
                             n_still_needed_total = current_active_tasks_in_bin[original_event_id]
                             plan_for_event = next((p for p in self.sampling_plans if p['event_id'] == original_event_id), None)
@@ -846,7 +846,6 @@ class SamplingExecutor:
 
 
     def _save_current_checkpoint(self, last_completed_bin_index: int):
-        # ... (同上) ...
         state = {
             'event_sums': self.event_sums, 'event_rows_collected': self.event_rows_collected,
             'last_completed_bin_index': last_completed_bin_index,
@@ -857,7 +856,7 @@ class SamplingExecutor:
 
 # --- 阶段 3: 完成与输出 (独立函数 - 保持不变) ---
 def finalize_run(run_info: Dict[str, Any], final_event_sums: List[np.ndarray], final_event_counts: List[Dict[str, int]], execution_successful: bool):
-    # ... (同上) ...
+
     logger.info("--- 开始阶段 3: 完成与输出 ---")
     output_dir = run_info['output_dir']; run_name = run_info['run_name']; num_layers = run_info['num_layers']
     sampling_plans = run_info['sampling_plans']; original_num_events = run_info['original_num_events']
