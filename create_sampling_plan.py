@@ -41,7 +41,7 @@ class SamplingPlanner:
     """负责根据配置生成抽样计划"""
     # ... (复制 SamplingPlanner 类的 __init__ 和 _parse_methodX, generate, _log_debug_plan 方法) ...
     def __init__(self, config: Dict[str, Any], hdf5_index: Dict[str, Any]):
-        # ... (同上) ...
+        
         self.config = config
         self.hdf5_index = hdf5_index
         self.num_events = config['num_datasets_to_generate']
@@ -56,7 +56,7 @@ class SamplingPlanner:
 
     # (_parse_method1, _parse_method2, _parse_method3 as methods)
     def _parse_method1(self, rng: Generator) -> List[Dict[str, int]]:
-        # ... (同上) ...
+        
         plans = []
         method_config = self.method_config
         levels = method_config['energy_levels_MeV']
@@ -77,7 +77,7 @@ class SamplingPlanner:
         return plans
 
     def _parse_method2(self, rng: Generator) -> List[Dict[str, int]]:
-        # ... (同上) ...
+        
         plans = []
         method_config = self.method_config
         levels = method_config['energy_levels_MeV']; probs = np.array(method_config['probabilities'])
@@ -106,7 +106,6 @@ class SamplingPlanner:
         return plans
 
     def _parse_method3(self, rng: Generator) -> List[Dict[str, int]]:
-        # ... (同上) ...
         plans = []
         method_config = self.method_config
         levels_mev = np.array(method_config['energy_levels_MeV'])
@@ -141,7 +140,7 @@ class SamplingPlanner:
         return plans
 
     def generate(self) -> List[Dict[str, Any]]:
-        # ... (同上) ...
+        
         ss = SeedSequence(self.base_seed)
         rng = Generator(PCG64(ss))
         logger.info(f"正在为 {self.num_events} 个抽样事件生成计划，使用方法: {self.method}")
@@ -169,7 +168,6 @@ class SamplingPlanner:
         return valid_final_plans
 
     def _log_debug_plan(self, valid_plans, required_levels):
-        # ... (同上) ...
         if '0.6MeV' in required_levels and valid_plans:
             first_event_id_with_06 = -1; target_count_06 = 'N/A'
             for plan in valid_plans:
@@ -180,7 +178,6 @@ class SamplingPlanner:
 
 def analyze_plan(sampling_plans: List[Dict[str, Any]], config: Dict[str, Any]):
     """对生成的抽样计划进行统计分析"""
-    # ... (同上一个脚本) ...
     logger.info("\n--- 开始抽样计划统计分析 ---")
     num_events = len(sampling_plans)
     if num_events == 0: logger.info("无有效计划可供分析。"); return
@@ -218,7 +215,6 @@ def analyze_plan(sampling_plans: List[Dict[str, Any]], config: Dict[str, Any]):
 
 def save_plan_to_file(plans: List[Dict[str, Any]], output_dir: str):
     """将抽样计划保存到 JSON 文件"""
-    # ... (同上一个脚本) ...
     plan_filepath = os.path.join(output_dir, SAMPLING_PLAN_FILENAME)
     try:
         os.makedirs(output_dir, exist_ok=True) # 确保目录存在

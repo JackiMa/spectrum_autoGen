@@ -6,12 +6,18 @@
     "num_detector_layers": 20,
     "random_seed": null,
     "output_directory": "./output",
-  
+
+    "orbit": "LEO",
+    "?orbit": "Orbit type, stored as a string in the generated file, Common values: GEO, GTP, MEO, POL, ISS, CRRES...",
+
+    "value_range": [1e5, 1e6],
+    "?value_range": "Generates a uniformly distributed random number within the range",
+
     "method1": {
       "_description": "Specify particle count range for each energy level. Generates spectrum by sampling counts per level independently.",
-      "energy_levels_MeV": [0.5],
-      "min_particles_per_level": [1000000],
-      "max_particles_per_level": [2000000]
+      "energy_levels_MeV": [1.0],
+      "min_particles_per_level": [10000],
+      "max_particles_per_level": [20000]
     },
   
     "method2": {

@@ -58,7 +58,7 @@ def load_checkpoint(filepath: str) -> Optional[Dict[str, Any]]:
 def save_output_file(output_dir: str, run_name: str, event_id: int,
                      plan: Dict[str, Any], final_sum: np.ndarray,
                      actual_counts_per_bin: Dict[str, int], num_layers: int,
-                     num_total_events: int, all_energy_bins: List[str] = None):
+                     num_total_events: int, all_energy_bins: List[str] = None, config: Dict[str, Any] = None):
     padding_width = len(str(num_total_events)); filename = f"{run_name}_{time.strftime('%Y%m%d%H%M%S')}_event_{event_id:0{padding_width}d}.txt"; filepath = os.path.join(output_dir, filename)
     try:
         # 不再跳过空的actual_counts_per_bin，而是输出所有能量点
@@ -85,11 +85,18 @@ def save_output_file(output_dir: str, run_name: str, event_id: int,
         # 第二行：每个能量点对应的粒子数，如果没有则为0
         line2 = ", ".join(str(actual_counts_per_bin.get(energy, 0)) for energy in energy_bins)
         
-        # 其他行保持不变
-        line3 = ", ".join(map(str, range(1, num_layers + 1)))
-        line4 = np.array2string(final_sum, separator=', ', formatter={'float_kind':lambda x: f"{x:.8e}"},threshold=np.inf,max_line_width=np.inf).replace('[','').replace(']','')
+        # 第三行：orbit data
+        line3 = config['orbit']
         
-        content = f"{line1}\n{line2}\n\n\n{line3}\n{line4}"
+        # 第四行：random number, 均匀分布随机数，整数
+        random_range = config['value_range']
+        line4 = str(int(np.random.uniform(random_range[0], random_range[1])))
+        
+        # 第五行：detector response
+        line5 = ", ".join(map(str, range(1, num_layers + 1)))
+        line6 = np.array2string(final_sum, separator=', ', formatter={'float_kind':lambda x: f"{x:.8e}"},threshold=np.inf,max_line_width=np.inf).replace('[','').replace(']','')
+        
+        content = f"{line1}\n{line2}\n{line3}\n{line4}\n{line5}\n{line6}"
         logger.debug(f"DEBUG SAVE: 事件 {event_id}, 写入第二行: {line2}") 
         with open(filepath, 'w', encoding='utf-8') as f: f.write(content)
         logger.info(f"已保存事件 {event_id} 的输出文件: {filename}")
@@ -855,7 +862,7 @@ class SamplingExecutor:
 # --- End SamplingExecutor Class ---
 
 # --- 阶段 3: 完成与输出 (独立函数 - 保持不变) ---
-def finalize_run(run_info: Dict[str, Any], final_event_sums: List[np.ndarray], final_event_counts: List[Dict[str, int]], execution_successful: bool):
+def finalize_run(run_info: Dict[str, Any], final_event_sums: List[np.ndarray], final_event_counts: List[Dict[str, int]], execution_successful: bool, config: Dict[str, Any]):
 
     logger.info("--- 开始阶段 3: 完成与输出 ---")
     output_dir = run_info['output_dir']; run_name = run_info['run_name']; num_layers = run_info['num_layers']
@@ -876,7 +883,7 @@ def finalize_run(run_info: Dict[str, Any], final_event_sums: List[np.ndarray], f
             for energy_key in plan['samples_per_bin']: relevant_counts[energy_key] = actual_counts_this_event.get(energy_key, 0)
             
             # 即使没有样本，也输出文件
-            save_output_file(output_dir, run_name, original_event_id, plan, final_sum, relevant_counts, num_layers, original_num_events, all_energy_bins)
+            save_output_file(output_dir, run_name, original_event_id, plan, final_sum, relevant_counts, num_layers, original_num_events, all_energy_bins, config = config)
             output_file_count += 1
     else: logger.error("最终结果列表长度与有效事件数不匹配，无法生成输出文件。")
     logger.info(f"共生成 {output_file_count} 个输出文件。")
@@ -1000,7 +1007,7 @@ def main_orchestrator(args=None, args_list=None):
         # --- 阶段 3: 完成 ---
         logger.info("=== Stage 3: Finalization ===")
         if final_event_sums is not None and final_event_counts is not None:
-            finalize_run(run_info, final_event_sums, final_event_counts, execution_successful)
+            finalize_run(run_info, final_event_sums, final_event_counts, execution_successful, config)
         else:
             logger.error("无法获取最终结果，跳过最终处理步骤。")
 
