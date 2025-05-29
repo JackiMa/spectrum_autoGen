@@ -1,6 +1,6 @@
 {
     "simulation_run_name": "test_run",
-    "num_datasets_to_generate": 20,
+    "num_datasets_to_generate": 2000,
     "generation_method": "method1",
     "input_data_directory": "./sim_data_hd5_V2",
     "num_detector_layers": 20,
@@ -10,14 +10,14 @@
     "orbit": "LEO",
     "?orbit": "Orbit type, stored as a string in the generated file, Common values: GEO, GTP, MEO, POL, ISS, CRRES...",
 
-    "value_range": [1e5, 1e6],
+    "value_range": [137077632246,411232896738],
     "?value_range": "Generates a uniformly distributed random number within the range",
 
     "method1": {
       "_description": "Specify particle count range for each energy level. Generates spectrum by sampling counts per level independently.",
       "energy_levels_MeV": [1.0],
-      "min_particles_per_level": [10000],
-      "max_particles_per_level": [20000]
+      "min_particles_per_level": [100000],
+      "max_particles_per_level": [200000]
     },
   
     "method2": {

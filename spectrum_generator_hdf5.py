@@ -92,6 +92,7 @@ def save_output_file(output_dir: str, run_name: str, event_id: int,
         random_range = config['value_range']
         line4 = str(int(np.random.uniform(random_range[0], random_range[1])))
         
+        
         # 第五行：detector response
         line5 = ", ".join(map(str, range(1, num_layers + 1)))
         line6 = np.array2string(final_sum, separator=', ', formatter={'float_kind':lambda x: f"{x:.8e}"},threshold=np.inf,max_line_width=np.inf).replace('[','').replace(']','')
