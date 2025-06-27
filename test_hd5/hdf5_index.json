@@ -1,0 +1,444 @@
+{
+    "0.55MeV": {
+        "total_rows_in_bin": 42327067,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "0.55MeV\\e_0.55MeV_part_0000.hdf5",
+                "rows": 10000000,
+                "part_num": 0
+            },
+            {
+                "path": "0.55MeV\\e_0.55MeV_part_0001.hdf5",
+                "rows": 10000000,
+                "part_num": 1
+            },
+            {
+                "path": "0.55MeV\\e_0.55MeV_part_0002.hdf5",
+                "rows": 10000000,
+                "part_num": 2
+            },
+            {
+                "path": "0.55MeV\\e_0.55MeV_part_0003.hdf5",
+                "rows": 10000000,
+                "part_num": 3
+            },
+            {
+                "path": "0.55MeV\\e_0.55MeV_part_0004.hdf5",
+                "rows": 2327067,
+                "part_num": 4
+            }
+        ]
+    },
+    "0.5MeV": {
+        "total_rows_in_bin": 126981201,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0000.hdf5",
+                "rows": 10000000,
+                "part_num": 0
+            },
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0001.hdf5",
+                "rows": 10000000,
+                "part_num": 1
+            },
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0002.hdf5",
+                "rows": 10000000,
+                "part_num": 2
+            },
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0003.hdf5",
+                "rows": 10000000,
+                "part_num": 3
+            },
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0004.hdf5",
+                "rows": 10000000,
+                "part_num": 4
+            },
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0005.hdf5",
+                "rows": 10000000,
+                "part_num": 5
+            },
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0006.hdf5",
+                "rows": 10000000,
+                "part_num": 6
+            },
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0007.hdf5",
+                "rows": 10000000,
+                "part_num": 7
+            },
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0008.hdf5",
+                "rows": 10000000,
+                "part_num": 8
+            },
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0009.hdf5",
+                "rows": 10000000,
+                "part_num": 9
+            },
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0010.hdf5",
+                "rows": 10000000,
+                "part_num": 10
+            },
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0011.hdf5",
+                "rows": 10000000,
+                "part_num": 11
+            },
+            {
+                "path": "0.5MeV\\e_0.50MeV_part_0012.hdf5",
+                "rows": 6981201,
+                "part_num": 12
+            }
+        ]
+    },
+    "0.6MeV": {
+        "total_rows_in_bin": 89989396,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "0.6MeV\\e_0.60MeV_part_0000.hdf5",
+                "rows": 10000000,
+                "part_num": 0
+            },
+            {
+                "path": "0.6MeV\\e_0.60MeV_part_0001.hdf5",
+                "rows": 10000000,
+                "part_num": 1
+            },
+            {
+                "path": "0.6MeV\\e_0.60MeV_part_0002.hdf5",
+                "rows": 10000000,
+                "part_num": 2
+            },
+            {
+                "path": "0.6MeV\\e_0.60MeV_part_0003.hdf5",
+                "rows": 10000000,
+                "part_num": 3
+            },
+            {
+                "path": "0.6MeV\\e_0.60MeV_part_0004.hdf5",
+                "rows": 10000000,
+                "part_num": 4
+            },
+            {
+                "path": "0.6MeV\\e_0.60MeV_part_0005.hdf5",
+                "rows": 10000000,
+                "part_num": 5
+            },
+            {
+                "path": "0.6MeV\\e_0.60MeV_part_0006.hdf5",
+                "rows": 10000000,
+                "part_num": 6
+            },
+            {
+                "path": "0.6MeV\\e_0.60MeV_part_0007.hdf5",
+                "rows": 10000000,
+                "part_num": 7
+            },
+            {
+                "path": "0.6MeV\\e_0.60MeV_part_0008.hdf5",
+                "rows": 9989396,
+                "part_num": 8
+            }
+        ]
+    },
+    "0.7MeV": {
+        "total_rows_in_bin": 52997797,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "0.7MeV\\e_0.70MeV_part_0000.hdf5",
+                "rows": 10000000,
+                "part_num": 0
+            },
+            {
+                "path": "0.7MeV\\e_0.70MeV_part_0001.hdf5",
+                "rows": 10000000,
+                "part_num": 1
+            },
+            {
+                "path": "0.7MeV\\e_0.70MeV_part_0002.hdf5",
+                "rows": 10000000,
+                "part_num": 2
+            },
+            {
+                "path": "0.7MeV\\e_0.70MeV_part_0003.hdf5",
+                "rows": 10000000,
+                "part_num": 3
+            },
+            {
+                "path": "0.7MeV\\e_0.70MeV_part_0004.hdf5",
+                "rows": 10000000,
+                "part_num": 4
+            },
+            {
+                "path": "0.7MeV\\e_0.70MeV_part_0005.hdf5",
+                "rows": 2997797,
+                "part_num": 5
+            }
+        ]
+    },
+    "0.8MeV": {
+        "total_rows_in_bin": 29885497,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "0.8MeV\\e_0.80MeV_part_0000.hdf5",
+                "rows": 10000000,
+                "part_num": 0
+            },
+            {
+                "path": "0.8MeV\\e_0.80MeV_part_0001.hdf5",
+                "rows": 10000000,
+                "part_num": 1
+            },
+            {
+                "path": "0.8MeV\\e_0.80MeV_part_0002.hdf5",
+                "rows": 9885497,
+                "part_num": 2
+            }
+        ]
+    },
+    "0.9MeV": {
+        "total_rows_in_bin": 20652907,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "0.9MeV\\e_0.90MeV_part_0000.hdf5",
+                "rows": 10000000,
+                "part_num": 0
+            },
+            {
+                "path": "0.9MeV\\e_0.90MeV_part_0001.hdf5",
+                "rows": 10000000,
+                "part_num": 1
+            },
+            {
+                "path": "0.9MeV\\e_0.90MeV_part_0002.hdf5",
+                "rows": 652907,
+                "part_num": 2
+            }
+        ]
+    },
+    "1.0MeV": {
+        "total_rows_in_bin": 11420296,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "1.0MeV\\e_1.00MeV_part_0000.hdf5",
+                "rows": 10000000,
+                "part_num": 0
+            },
+            {
+                "path": "1.0MeV\\e_1.00MeV_part_0001.hdf5",
+                "rows": 1420296,
+                "part_num": 1
+            }
+        ]
+    },
+    "1.1MeV": {
+        "total_rows_in_bin": 9846329,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "1.1MeV\\e_1.10MeV_part_0000.hdf5",
+                "rows": 9846329,
+                "part_num": 0
+            }
+        ]
+    },
+    "1.2MeV": {
+        "total_rows_in_bin": 8272383,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "1.2MeV\\e_1.20MeV_part_0000.hdf5",
+                "rows": 8272383,
+                "part_num": 0
+            }
+        ]
+    },
+    "1.3MeV": {
+        "total_rows_in_bin": 6698416,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "1.3MeV\\e_1.30MeV_part_0000.hdf5",
+                "rows": 6698416,
+                "part_num": 0
+            }
+        ]
+    },
+    "1.4MeV": {
+        "total_rows_in_bin": 5124449,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "1.4MeV\\e_1.40MeV_part_0000.hdf5",
+                "rows": 5124449,
+                "part_num": 0
+            }
+        ]
+    },
+    "1.5MeV": {
+        "total_rows_in_bin": 3550503,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "1.5MeV\\e_1.50MeV_part_0000.hdf5",
+                "rows": 3550503,
+                "part_num": 0
+            }
+        ]
+    },
+    "1.6MeV": {
+        "total_rows_in_bin": 3040397,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "1.6MeV\\e_1.60MeV_part_0000.hdf5",
+                "rows": 3040397,
+                "part_num": 0
+            }
+        ]
+    },
+    "1.7MeV": {
+        "total_rows_in_bin": 2530290,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "1.7MeV\\e_1.70MeV_part_0000.hdf5",
+                "rows": 2530290,
+                "part_num": 0
+            }
+        ]
+    },
+    "1.8MeV": {
+        "total_rows_in_bin": 2020198,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "1.8MeV\\e_1.80MeV_part_0000.hdf5",
+                "rows": 2020198,
+                "part_num": 0
+            }
+        ]
+    },
+    "1.9MeV": {
+        "total_rows_in_bin": 1510098,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "1.9MeV\\e_1.90MeV_part_0000.hdf5",
+                "rows": 1510098,
+                "part_num": 0
+            }
+        ]
+    },
+    "2.0MeV": {
+        "total_rows_in_bin": 1000000,
+        "rows_per_part_nominal": 10000000,
+        "chunk_shape": [
+            10000,
+            20
+        ],
+        "dataset_name": "detector_response",
+        "parts": [
+            {
+                "path": "2.0MeV\\e_2.00MeV_part_0000.hdf5",
+                "rows": 1000000,
+                "part_num": 0
+            }
+        ]
+    }
+}

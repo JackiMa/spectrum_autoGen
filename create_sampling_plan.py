@@ -67,7 +67,7 @@ class SamplingPlanner:
         for i in range(self.num_events):
             event_plan = {}
             for j, level in enumerate(levels):
-                level_name = f"{level:.1f}MeV"
+                level_name = f"{level}MeV"
                 actual_min = min(min_counts[j], max_counts[j])
                 actual_max = max(min_counts[j], max_counts[j])
                 if actual_min < 0 or actual_max < 0: logger.warning(f"Method 1, E{i}, L{level_name}: Count range invalid ({actual_min}, {actual_max}), using max(0,...)"); actual_min = max(0, actual_min); actual_max = max(0, actual_max)
@@ -101,8 +101,10 @@ class SamplingPlanner:
                      logger.error(f"Multinomial error event {i}: {e}, probs={probs}, total={total_particles}. Using fallback.")
                      probs_fallback = np.ones_like(levels) / len(levels); counts = rng.multinomial(total_particles, probs_fallback)
             event_plan = {}
-            for j, level in enumerate(levels): event_plan[f"{level:.1f}MeV"] = int(counts[j])
+            for j, level in enumerate(levels): 
+                event_plan[f"{level}MeV"] = int(counts[j])
             plans.append(event_plan)
+        logger.info(f"Method 2: {plans}")
         return plans
 
     def _parse_method3(self, rng: Generator) -> List[Dict[str, int]]:
@@ -135,7 +137,7 @@ class SamplingPlanner:
                      logger.error(f"Multinomial error event {i}: {e}, probs={probs}, total={total_particles}. Using fallback.")
                      probs_fallback = np.ones_like(levels_mev) / len(levels_mev); counts = rng.multinomial(total_particles, probs_fallback)
             event_plan = {}
-            for j, level in enumerate(levels_mev): event_plan[f"{level:.1f}MeV"] = int(counts[j])
+            for j, level in enumerate(levels_mev): event_plan[f"{level}MeV"] = int(counts[j])
             plans.append(event_plan)
         return plans
 
@@ -164,6 +166,11 @@ class SamplingPlanner:
         if num_valid_events < original_num_events: logger.warning(f"{original_num_events - num_valid_events} 个事件因抽样计划为空而被移除。")
         if num_valid_events == 0: logger.error("没有有效的抽样计划生成。")
         logger.info(f"成功生成 {num_valid_events} 个有效的抽样计划。")
+        # 打印抽样计划概要：什么能量，抽多少
+        for plan in valid_final_plans[0:1]:
+            logger.info(f"第一个抽样计划 Event {plan['event_id']}:")
+            for energy, count in plan['samples_per_bin'].items():
+                logger.info(f"  - {energy}: {count}")
         self._log_debug_plan(valid_final_plans, all_required_levels)
         return valid_final_plans
 
